@@ -7,14 +7,14 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "emai
 router.get("/google/callback", 
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-    res.redirect("https://to-do-backend-q9sw.onrender.com/dashboard"); // where your React app lives
+    res.redirect("https://to-do-frontend-jwdu.onrender.com");
   }
 );
 
 router.get("/logout", (req, res) => {
   req.logout(err => {
     if (err) return res.status(500).send('Logout error');
-    res.redirect('https://to-do-backend-q9sw.onrender.com'); // redirect to frontend
+    res.redirect('https://to-do-frontend-jwdu.onrender.com'); // redirect to frontend
   });
 });
 
