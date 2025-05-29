@@ -5,6 +5,9 @@ const cors = require('cors');
 const fs = require('fs');
 const session = require('express-session');
 const passport = require('passport');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
 require("./config/passportConfig"); // <-- Add this line
 
 // Check if .env file exists
@@ -18,8 +21,22 @@ if (!process.env.MONGO_URI) {
 }
 
 const app = express();
+
+// Add Helmet middleware for security headers
+app.use(helmet());
+
+// Add rate limiting middleware
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+});
+app.use(limiter);
+
+// Add mongo-sanitize middleware to prevent NoSQL injection
+app.use(mongoSanitize());
+
 app.use(cors({
-  origin: '*',
+  origin: 'https://to-do-frontend-jwdu.onrender.com',
   credentials: true
 }));
 app.use(express.json());
