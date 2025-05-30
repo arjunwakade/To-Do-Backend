@@ -32,12 +32,9 @@ passport.use(new GoogleStrategy(
       await newUser.save();
       done(null, newUser);
     } catch (err) {
+      console.error("Passport strategy error:", err); // <-- Add this
       done(err, null);
     }
   }
 ));
 
-// Add error event listener
-passport.on('error', (err) => {
-  console.error("Passport error:", err);
-});
