@@ -21,6 +21,7 @@ if (!process.env.MONGO_URI) {
 }
 
 const app = express();
+app.set('trust proxy', 1); // <-- Move this here, before session/cors
 
 // Add Helmet middleware for security headers
 app.use(helmet());

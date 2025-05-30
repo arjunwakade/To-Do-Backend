@@ -14,6 +14,7 @@ router.get("/google/callback",
   },
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
+    console.log("User after Google login:", req.user);
     res.redirect("https://to-do-frontend-jwdu.onrender.com");
   }
 );
@@ -29,6 +30,9 @@ router.get("/logout", (req, res) => {
 });
 
 router.get('/user', (req, res) => {
+  console.log("Session ID:", req.sessionID);
+  console.log("Session:", req.session);
+  console.log("User in /auth/user:", req.user);
   if (req.isAuthenticated()) {
     res.json(req.user);
   } else {
