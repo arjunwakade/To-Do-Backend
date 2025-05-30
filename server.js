@@ -47,7 +47,8 @@ app.use(session({
   store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
   cookie: {
     sameSite: 'none',
-    secure: true
+    secure: true,
+    domain: '.onrender.com'
   }
 }));
 app.use(passport.initialize());
