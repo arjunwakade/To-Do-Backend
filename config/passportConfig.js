@@ -22,7 +22,6 @@ passport.use(new GoogleStrategy(
     callbackURL: "https://to-do-backend-q9sw.onrender.com/auth/google/callback"
   },
   async (accessToken, refreshToken, profile, done) => {
-    console.log("Google profile:", profile);
     try {
       let existingUser = await User.findOne({ googleId: profile.id });
 
