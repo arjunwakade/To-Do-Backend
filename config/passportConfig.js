@@ -3,7 +3,7 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const User = require("../models/User");
 
 passport.serializeUser((user, done) => {
-  done(null, user.id); // or user.id or user.googleId, depending on your schema
+  done(null, user._id); // or user.id or user.googleId, depending on your schema
 });
 
 passport.deserializeUser(async (id, done) => {
