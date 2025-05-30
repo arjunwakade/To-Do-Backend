@@ -7,7 +7,6 @@ const session = require('express-session');
 const passport = require('passport');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const mongoSanitize = require('express-mongo-sanitize');
 require("./config/passportConfig"); // <-- Add this line
 
 // Check if .env file exists
@@ -32,9 +31,6 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Add mongo-sanitize middleware to prevent NoSQL injection
-app.use(mongoSanitize());
-
 app.use(cors({
   origin: 'https://to-do-frontend-jwdu.onrender.com',
   credentials: true
@@ -43,9 +39,13 @@ app.use(express.json());
 
 // --- OAUTH SESSION/PASSPORT MIDDLEWARE ---
 app.use(session({
-  secret: process.env.SESSION_SECRET || "to-do-secret-key", // Use env if available
+  secret: process.env.SESSION_SECRET || "to-do-secret-key",
   resave: false,
   saveUninitialized: true,
+  cookie: {
+    sameSite: 'none',
+    secure: true
+  }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
