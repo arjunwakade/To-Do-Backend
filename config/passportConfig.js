@@ -14,9 +14,10 @@ passport.use(new GoogleStrategy(
   {
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/auth/google/callback"
+    callbackURL: "https://to-do-backend-q9sw.onrender.com/auth/google/callback"
   },
   async (accessToken, refreshToken, profile, done) => {
+    console.log("Google profile:", profile);
     try {
       let existingUser = await User.findOne({ googleId: profile.id });
 
@@ -35,3 +36,8 @@ passport.use(new GoogleStrategy(
     }
   }
 ));
+
+// Add error event listener
+passport.on('error', (err) => {
+  console.error("Passport error:", err);
+});

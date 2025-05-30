@@ -62,4 +62,9 @@ app.use('/api/todos', todoRoutes);
 const authRoutes = require("./routes/auth");
 app.use("/auth", authRoutes);
 
+app.use((err, req, res, next) => {
+  console.error("Global error handler:", err);
+  res.status(500).send('Internal Server Error');
+});
+
 app.listen(5000, () => console.log('Server started on port 5000'));

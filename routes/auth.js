@@ -2,9 +2,16 @@ const express = require("express");
 const passport = require("passport");
 const router = express.Router();
 
-router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+router.get("/google", (req, res, next) => {
+  console.log("HIT /auth/google");
+  passport.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
+});
 
 router.get("/google/callback", 
+  (req, res, next) => {
+    console.log("HIT /auth/google/callback");
+    next();
+  },
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
     res.redirect("https://to-do-frontend-jwdu.onrender.com");
@@ -13,8 +20,11 @@ router.get("/google/callback",
 
 router.get("/logout", (req, res) => {
   req.logout(err => {
-    if (err) return res.status(500).send('Logout error');
-    res.redirect('https://to-do-frontend-jwdu.onrender.com'); // redirect to frontend
+    if (err) {
+      console.error("Logout error:", err);
+      return res.status(500).send('Logout error');
+    }
+    res.redirect('https://to-do-frontend-jwdu.onrender.com');
   });
 });
 
