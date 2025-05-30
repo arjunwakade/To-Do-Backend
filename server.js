@@ -7,6 +7,7 @@ const session = require('express-session');
 const passport = require('passport');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const MongoStore = require('connect-mongo');
 require("./config/passportConfig"); // <-- Add this line
 
 // Check if .env file exists
@@ -41,7 +42,8 @@ app.use(express.json());
 app.use(session({
   secret: process.env.SESSION_SECRET || "to-do-secret-key",
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
+  store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
   cookie: {
     sameSite: 'none',
     secure: true
