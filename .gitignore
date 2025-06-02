@@ -1,5 +1,6 @@
 # Node modules
 node_modules/
+actions-runner/
 
 # Logs
 npm-debug.log*

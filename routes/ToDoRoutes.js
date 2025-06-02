@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Todo = require('../models/ToDo');
-const isAuthenticated = require('../middleware/isAuth'); // <-- Add this line
+const isAuthenticated = require('../middleware/isAuth');
 
 // GET all (user-specific)
 router.get('/', isAuthenticated, async (req, res) => {
@@ -12,7 +12,7 @@ router.get('/', isAuthenticated, async (req, res) => {
 // POST new
 router.post('/', isAuthenticated, async (req, res) => {
   const newTodo = new Todo({
-    task: req.body.task, // <-- match schema
+    task: req.body.task,
     userId: req.user.id,
     completed: false
   });

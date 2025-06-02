@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const TodoSchema = new mongoose.Schema({
-  userId: String, // link to the user
+  userId: String,
   task: String,
   completed: Boolean
 });

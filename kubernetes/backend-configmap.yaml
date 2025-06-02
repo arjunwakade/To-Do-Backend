@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  # Example environment variables
+  MONGO_URI: "${{ secrets.MONGO_URI }}"
+  JWT_SECRET: "${{ secrets.JWT_SECRET }}"
+  # Add any other config variables your backend needs
