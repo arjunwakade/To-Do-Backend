@@ -9,5 +9,6 @@ jest.mock('passport', () => ({
   serializeUser: jest.fn(),
   deserializeUser: jest.fn(),
   initialize: jest.fn(() => (req, res, next) => next()),
-  session: jest.fn(() => (req, res, next) => next())
+  session: jest.fn(() => (req, res, next) => next()),
+  authenticate: jest.fn(() => (req, res, next) => next())
 }));

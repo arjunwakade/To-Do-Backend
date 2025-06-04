@@ -4,6 +4,11 @@ require('./mocks/passport');
 const app = require('../server.js');
 
 describe('To-Do API', () => {
+  beforeEach(() => {
+    // Clear all mocks before each test
+    jest.clearAllMocks();
+  });
+
   // Test GET /api/todos
   it('should return all todos', async () => {
     const res = await request(app).get('/api/todos');
