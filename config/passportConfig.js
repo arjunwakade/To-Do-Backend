@@ -1,6 +1,6 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const User = require("../models/User");
+const User = require("../models/User.js");
 
 passport.serializeUser((user, done) => {
   done(null, user.googleId); // or user.id or user.googleId, depending on your schema

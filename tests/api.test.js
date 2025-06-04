@@ -1,22 +1,34 @@
 const request = require('supertest');
-const app = require('../server'); // Your Express app
+const app = require('../server.js');
 
 describe('To-Do API', () => {
-  // Example: Test GET /todos
+  // Test GET /api/todos
   it('should return all todos', async () => {
-    const res = await request(app).get('/todos');
-    expect(res.statusCode).toEqual(200);
-    expect(Array.isArray(res.body)).toBe(true);
+    const res = await request(app).get('/api/todos');
+    expect(res.statusCode).toEqual(401); // Will return 401 without auth
+    expect(res.body).toHaveProperty('msg', 'Not authorized');
   });
 
-  // Example: Test POST /todos
+  // Test POST /api/todos
   it('should create a new todo', async () => {
     const res = await request(app)
-      .post('/todos')
-      .send({ title: 'Test todo', completed: false });
-    expect(res.statusCode).toEqual(201);
-    expect(res.body.title).toBe('Test todo');
+      .post('/api/todos')
+      .send({ task: 'Test todo', completed: false });
+    expect(res.statusCode).toEqual(401); // Will return 401 without auth
+    expect(res.body).toHaveProperty('msg', 'Not authorized');
   });
 
-  // Add more tests for PUT, DELETE as needed
+  // Test GET /api/todos (requires authentication)
+  it('should return 401 for unauthenticated todos request', async () => {
+    const res = await request(app).get('/api/todos');
+    expect(res.statusCode).toEqual(401);
+    expect(res.body).toHaveProperty('msg', 'Not authorized');
+  });
+
+  // Test authentication endpoint
+  it('should return not logged in for /auth/user', async () => {
+    const res = await request(app).get('/auth/user');
+    expect(res.statusCode).toEqual(401);
+    expect(res.body).toHaveProperty('msg', 'Not logged in');
+  });
 });

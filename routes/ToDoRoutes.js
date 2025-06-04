@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Todo = require('../models/ToDo');
-const isAuthenticated = require('../middleware/isAuth');
+const Todo = require('../models/ToDo.js');
+const isAuthenticated = require('../middleware/isAuth.js');
 
 // GET all (user-specific)
 router.get('/', isAuthenticated, async (req, res) => {

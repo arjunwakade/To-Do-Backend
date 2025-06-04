@@ -70,4 +70,10 @@ app.use((err, req, res, next) => {
   res.status(500).send('Internal Server Error');
 });
 
-app.listen(5000, () => console.log('Server started on port 5000'));
+// Only start the server if this file is run directly
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(5000, () => console.log('Server started on port 5000'));
+}
+
+// Export the app for testing
+module.exports = app;
