@@ -29,8 +29,8 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "setupFilesAfterEnv": [
-      "./tests/setup.js"
+    "setupFiles": [
+      "<rootDir>/tests/mocks/passport.js"
     ]
   }
 }

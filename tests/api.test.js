@@ -1,4 +1,6 @@
 const request = require('supertest');
+// Add mock before requiring app
+require('./mocks/passport');
 const app = require('../server.js');
 
 describe('To-Do API', () => {
