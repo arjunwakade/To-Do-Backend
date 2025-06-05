@@ -16,26 +16,36 @@ jobs:
       - uses: actions/checkout@v3
       
       - name: Setup Minikube
+        shell: pwsh
         run: |
-          minikube status || (
+          if (-not (minikube status)) {
+            Write-Host "Minikube not running, setting up fresh cluster..."
             minikube delete
             minikube start --embed-certs
             minikube update-context
-          )
+          } else {
+            Write-Host "Minikube is already running"
+          }
           
       - name: Configure kubectl
+        shell: pwsh
         run: |
           kubectl config use-context minikube
           kubectl config view
           
       - name: Deploy to Kubernetes
+        shell: pwsh
         run: |
           kubectl apply -f kubernetes/backend-configmap.yaml --validate=false
           kubectl apply -f kubernetes/backend-deployment.yaml --validate=false
           kubectl apply -f kubernetes/backend-service.yaml --validate=false
           
       - name: Verify deployment
+        shell: pwsh
         run: |
+          Write-Host "Waiting for deployment to be available..."
           kubectl wait --for=condition=available deployment/todo-backend --timeout=60s
+          Write-Host "Checking pod status..."
           kubectl get pods -l app=todo-backend
+          Write-Host "Checking service status..."
           kubectl get svc todo-backend
