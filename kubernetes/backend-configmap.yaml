@@ -3,7 +3,6 @@ kind: ConfigMap
 metadata:
   name: backend-config
 data:
-  # Example environment variables
-  MONGO_URI: "${{ secrets.MONGO_URI }}"
-  JWT_SECRET: "${{ secrets.JWT_SECRET }}"
-  # Add any other config variables your backend needs
+  NODE_ENV: "production"
+  PORT: "5000"
+  CORS_ORIGIN: "https://to-do-frontend-jwdu.onrender.com"
