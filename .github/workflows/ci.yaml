@@ -59,8 +59,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/backend:latest
-            ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
+            ghcr.io/todo-backend/backend:latest
+            ghcr.io/todo-backend/backend:${{ github.sha }}
           build-args: |
             GH_PAT=${{ secrets.GH_PAT }}
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
