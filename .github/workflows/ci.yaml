@@ -42,7 +42,6 @@ jobs:
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       MONGO_URI: ${{ secrets.MONGO_URI }}
-      KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
     steps:
       - uses: actions/checkout@v3

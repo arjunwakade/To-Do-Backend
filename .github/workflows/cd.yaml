@@ -20,5 +20,3 @@ jobs:
           kubectl apply -f kubernetes/backend-configmap.yaml
           kubectl apply -f kubernetes/backend-deployment.yaml
           kubectl apply -f kubernetes/backend-service.yaml
-        env:
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
