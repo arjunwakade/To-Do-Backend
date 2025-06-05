@@ -8,7 +8,7 @@ const passport = require('passport');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const MongoStore = require('connect-mongo');
-require("./config/passportConfig"); // <-- Add this line
+require("./config/passportConfig.js");
 
 // Check if .env file exists
 console.log("ENV FILE EXISTS?", fs.existsSync('.env'));
@@ -21,7 +21,7 @@ if (!process.env.MONGO_URI) {
 }
 
 const app = express();
-app.set('trust proxy', 1); // <-- Move this here, before session/cors
+app.set('trust proxy', 1);
 
 // Add Helmet middleware for security headers
 app.use(helmet());
@@ -58,11 +58,11 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
   .then(() => console.log('Mongo connected'))
   .catch(err => console.error("MongoDB connection failed:", err));
 
-const todoRoutes = require('./routes/ToDoRoutes');
+const todoRoutes = require('./routes/ToDoRoutes.js');
 app.use('/api/todos', todoRoutes);
 
 // Add auth routes
-const authRoutes = require("./routes/auth");
+const authRoutes = require("./routes/auth.js");
 app.use("/auth", authRoutes);
 
 app.use((err, req, res, next) => {

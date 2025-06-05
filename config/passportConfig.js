@@ -17,8 +17,8 @@ passport.deserializeUser(async (id, done) => {
 
 passport.use(new GoogleStrategy(
   {
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    clientID: "${{ secrets.GOOGLE_CLIENT_ID }}",
+    clientSecret: "${{ secrets.GOOGLE_CLIENT_SECRET }}",
     callbackURL: "https://to-do-backend-q9sw.onrender.com/auth/google/callback"
   },
   async (accessToken, refreshToken, profile, done) => {
@@ -36,7 +36,7 @@ passport.use(new GoogleStrategy(
       await newUser.save();
       done(null, newUser);
     } catch (err) {
-      console.error("Passport strategy error:", err); // <-- Add this
+      console.error("Passport strategy error:", err);
       done(err, null);
     }
   }

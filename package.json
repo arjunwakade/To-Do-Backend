@@ -29,8 +29,11 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "setupFiles": [
-      "<rootDir>/tests/mocks/passport.js"
-    ]
+    "setupFilesAfterEnv": [
+      "./tests/setup.js"
+    ],
+    "testTimeout": 5000,
+    "verbose": true,
+    "clearMocks": true
   }
 }
