@@ -15,8 +15,27 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Deploy to local Kubernetes
+      - name: Setup Minikube
         run: |
-          kubectl apply -f kubernetes/backend-configmap.yaml
-          kubectl apply -f kubernetes/backend-deployment.yaml
-          kubectl apply -f kubernetes/backend-service.yaml
+          minikube status || (
+            minikube delete
+            minikube start --embed-certs
+            minikube update-context
+          )
+          
+      - name: Configure kubectl
+        run: |
+          kubectl config use-context minikube
+          kubectl config view
+          
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f kubernetes/backend-configmap.yaml --validate=false
+          kubectl apply -f kubernetes/backend-deployment.yaml --validate=false
+          kubectl apply -f kubernetes/backend-service.yaml --validate=false
+          
+      - name: Verify deployment
+        run: |
+          kubectl wait --for=condition=available deployment/todo-backend --timeout=60s
+          kubectl get pods -l app=todo-backend
+          kubectl get svc todo-backend
