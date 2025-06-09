@@ -19,7 +19,7 @@ jobs:
         shell: bash
         run: |
           echo "Setting up minikube in WSL..."
-          wsl -e bash -ic '
+          wsl -d Ubuntu -e bash -ic '
             # Install Docker if not present
             if ! command -v docker &> /dev/null; then
               curl -fsSL https://get.docker.com -o get-docker.sh
