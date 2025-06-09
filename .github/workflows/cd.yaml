@@ -15,38 +15,66 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Setup Minikube
-        shell: powershell
+      - name: Setup Minikube in WSL
+        shell: bash
         run: |
-          $status = minikube status
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "Minikube not running, setting up fresh cluster..."
-            minikube delete
-            minikube start --embed-certs
-            minikube update-context
-          } else {
-            Write-Host "Minikube is already running"
-          }
+          echo "Setting up minikube in WSL..."
+          wsl -e bash -ic '
+            # Install Docker if not present
+            if ! command -v docker &> /dev/null; then
+              curl -fsSL https://get.docker.com -o get-docker.sh
+              sudo sh get-docker.sh
+            fi
+
+            # Start Docker service
+            sudo service docker start
+
+            # Install minikube if not present
+            if ! command -v minikube &> /dev/null; then
+              curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+              sudo install minikube-linux-amd64 /usr/local/bin/minikube
+            fi
+
+            # Start minikube
+            minikube start --driver=docker
+
+            # Verify minikube status
+            minikube status
+          '
           
-      - name: Configure kubectl
-        shell: powershell
+      - name: Configure kubectl in WSL
+        shell: bash
         run: |
-          kubectl config use-context minikube
-          kubectl config view
+          wsl -e bash -ic '
+            # Install kubectl if not present
+            if ! command -v kubectl &> /dev/null; then
+              curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+              sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+            fi
+
+            # Configure kubectl
+            kubectl config use-context minikube
+          '
           
       - name: Deploy to Kubernetes
-        shell: powershell
+        shell: bash
         run: |
-          kubectl apply -f kubernetes/backend-configmap.yaml --validate=false
-          kubectl apply -f kubernetes/backend-deployment.yaml --validate=false
-          kubectl apply -f kubernetes/backend-service.yaml --validate=false
+          wsl -e bash -ic '
+            kubectl apply -f kubernetes/backend-configmap.yaml --validate=false
+            kubectl apply -f kubernetes/backend-deployment.yaml --validate=false
+            kubectl apply -f kubernetes/backend-service.yaml --validate=false
+          '
           
       - name: Verify deployment
-        shell: powershell
+        shell: bash
         run: |
-          Write-Host "Waiting for deployment to be available..."
-          kubectl wait --for=condition=available deployment/todo-backend --timeout=60s
-          Write-Host "Checking pod status..."
-          kubectl get pods -l app=todo-backend
-          Write-Host "Checking service status..."
-          kubectl get svc todo-backend
+          wsl -e bash -ic '
+            echo "Waiting for deployment to be available..."
+            kubectl wait --for=condition=available deployment/todo-backend --timeout=60s
+            
+            echo "Checking pod status..."
+            kubectl get pods -l app=todo-backend
+            
+            echo "Checking service status..."
+            kubectl get svc todo-backend
+          '
