@@ -46,12 +46,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          project_id: to-do-462615
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker
           
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -59,8 +61,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/arjunwakade/backend:latest
-            ghcr.io/arjunwakade/backend:${{ github.sha }}
+            gcr.io/to-do-462615/backend:latest
+            gcr.io/to-do-462615/backend:${{ github.sha }}
           build-args: |
             GH_PAT=${{ secrets.GH_PAT }}
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}

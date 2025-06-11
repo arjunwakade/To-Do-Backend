@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: todo-backend
-        image: ghcr.io/arjunwakade/to-do-backend/backend:latest
+        image: gcr.io/to-do-462615/backend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 5000

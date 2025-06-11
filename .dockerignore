@@ -7,3 +7,4 @@ Dockerfile
 tests
 .env
 *.md
+actions-runner/
