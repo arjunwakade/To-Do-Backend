@@ -52,7 +52,9 @@ jobs:
           project_id: to-do-462615
           
       - name: Configure Docker for GCR
-        run: gcloud auth configure-docker
+        run: |
+          gcloud auth configure-docker gcr.io
+          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin gcr.io
           
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
