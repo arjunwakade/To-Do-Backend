@@ -15,30 +15,39 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Install PowerShell Core
+      - name: Install PowerShell Core and Cloud SDK
         shell: powershell
         run: |
+          # Install PowerShell Core if not present
           if (-not (Get-Command -Name pwsh -ErrorAction SilentlyContinue)) {
             Write-Host "Installing PowerShell Core..."
             $url = "https://github.com/PowerShell/PowerShell/releases/download/v7.3.6/PowerShell-7.3.6-win-x64.msi"
             $outFile = "$env:TEMP\PowerShell-7.3.6-win-x64.msi"
             Invoke-WebRequest -Uri $url -OutFile $outFile
             Start-Process -FilePath msiexec.exe -Args "/i $outFile /quiet /norestart" -Wait
+          }
+          
+          # Install Cloud SDK if not present
+          if (-not (Get-Command -Name gcloud -ErrorAction SilentlyContinue)) {
+            Write-Host "Installing Google Cloud SDK..."
+            $url = "https://dl.google.com/dl/cloudsdk/channels/rapid/GoogleCloudSDKInstaller.exe"
+            $outFile = "$env:TEMP\GoogleCloudSDKInstaller.exe"
+            Invoke-WebRequest -Uri $url -OutFile $outFile
+            Start-Process -FilePath $outFile -Args "/S /allusers /noreporting" -Wait
             $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
           }
+          
+          # Install GKE auth plugin
+          gcloud components install gke-gcloud-auth-plugin -q
       
-      - id: 'auth'
-        name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@v1'
-        with:
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
-      
-      - name: Set up Cloud SDK
-        uses: 'google-github-actions/setup-gcloud@v1'
-        with:
-          version: '437.0.1'  # Specify a version
-          project_id: to-do-462615
-          install_components: 'gke-gcloud-auth-plugin'
+      - name: Authenticate to Google Cloud
+        shell: powershell
+        run: |
+          $credentials = '${{ secrets.GCP_SA_KEY }}'
+          $credentialsPath = "$env:TEMP\gcp-credentials.json"
+          Set-Content -Path $credentialsPath -Value $credentials
+          gcloud auth activate-service-account --key-file=$credentialsPath
+          gcloud config set project to-do-462615
       
       - name: Get GKE credentials
         uses: 'google-github-actions/get-gke-credentials@v1'
