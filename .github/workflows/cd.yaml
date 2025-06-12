@@ -15,6 +15,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
+      - name: Install PowerShell Core
+        shell: pwsh
+        run: |
+          if (!(Get-Command pwsh -ErrorAction SilentlyContinue)) {
+            winget install --id Microsoft.Powershell --source winget
+          }
+      
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v1'
@@ -22,24 +29,34 @@ jobs:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
       
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+        uses: 'google-github-actions/setup-gcloud@v1'
         with:
+          version: '437.0.1'  # Specify a version
           project_id: to-do-462615
-          
+          install_components: 'gke-gcloud-auth-plugin'
+      
       - name: Get GKE credentials
-        uses: google-github-actions/get-gke-credentials@v1
+        uses: 'google-github-actions/get-gke-credentials@v1'
         with:
           cluster_name: to-do-cluster
           location: us-central1-a
           project_id: to-do-462615
-          
+      
       - name: Deploy to GKE
+        shell: pwsh
         run: |
+          # Install kubectl if not present
+          if (!(Get-Command kubectl -ErrorAction SilentlyContinue)) {
+            $KubectlVersion = "v1.27.3"
+            Invoke-WebRequest -Uri "https://dl.k8s.io/release/$KubectlVersion/bin/windows/amd64/kubectl.exe" -OutFile "C:\Windows\System32\kubectl.exe"
+          }
+          
           kubectl apply -f kubernetes/backend-configmap.yaml
           kubectl apply -f kubernetes/backend-deployment.yaml
           kubectl apply -f kubernetes/backend-service.yaml
-          
+      
       - name: Verify deployment
+        shell: pwsh
         run: |
           echo "Waiting for deployment to be available..."
           kubectl wait --for=condition=available deployment/todo-backend --timeout=60s
