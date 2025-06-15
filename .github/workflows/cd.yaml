@@ -39,13 +39,26 @@ jobs:
           }
 
           Write-Host "[INFO] Updating PATH environment..."
-          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+          $gcloudPath = "${env:ProgramFiles(x86)}\Google\Cloud SDK\google-cloud-sdk\bin"
+          $env:Path = "$gcloudPath;" + $env:Path
+          [System.Environment]::SetEnvironmentVariable("Path", $env:Path, [System.EnvironmentVariableTarget]::Machine)
           
           Write-Host "[INFO] Verifying installation..."
           try {
-            $version = gcloud version
-            Write-Host "[SUCCESS] gcloud installed successfully:"
-            Write-Host $version
+            # Force PowerShell to refresh its PATH
+            $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+            
+            # Wait for gcloud to be available
+            Start-Sleep -Seconds 10
+            
+            # Try to find gcloud directly
+            $gcloudExe = Join-Path $gcloudPath "gcloud.cmd"
+            if (Test-Path $gcloudExe) {
+              & $gcloudExe version
+              Write-Host "[SUCCESS] gcloud installed successfully"
+            } else {
+              throw "gcloud.cmd not found at expected location"
+            }
           } catch {
             Write-Host "[ERROR] gcloud verification failed: $_"
             exit 1
