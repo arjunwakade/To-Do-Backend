@@ -19,14 +19,14 @@ jobs:
         shell: powershell
         run: |
           # Check if gcloud is already installed
-          $gcloudPath = "${env:ProgramFiles(x86)}\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.cmd"
+          $gcloudPath = "D:\apps\Google Cloud CLI\google-cloud-sdk\bin\gcloud.cmd"
           if (Test-Path $gcloudPath) {
             Write-Host "[INFO] Google Cloud SDK is already installed"
-            $env:Path = "${env:ProgramFiles(x86)}\Google\Cloud SDK\google-cloud-sdk\bin;" + $env:Path
+            $env:Path = "D:\apps\Google Cloud CLI\google-cloud-sdk\bin;" + $env:Path
             Write-Host "[SUCCESS] Added gcloud to PATH"
             exit 0
           }
-
+          
           # If not installed, proceed with installation
           Write-Host "[INFO] Google Cloud SDK not found. Installing..."
           
