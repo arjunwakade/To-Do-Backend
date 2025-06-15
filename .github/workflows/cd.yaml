@@ -15,6 +15,64 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
+      - name: Install Google Cloud SDK
+        shell: powershell
+        run: |
+          Write-Host "📥 Downloading Google Cloud SDK installer..."
+          $installerUrl = "https://dl.google.com/dl/cloudsdk/channels/rapid/GoogleCloudSDKInstaller.exe"
+          $installerPath = "$env:TEMP\GoogleCloudSDKInstaller.exe"
+          try {
+            Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath
+            Write-Host "✅ Download completed successfully"
+          } catch {
+            Write-Host "❌ Failed to download SDK: $_"
+            exit 1
+          }
+
+          Write-Host "🔧 Installing Google Cloud SDK..."
+          try {
+            Start-Process -FilePath $installerPath -Args "/S /allusers /noreporting" -Wait
+            Write-Host "✅ Installation completed"
+          } catch {
+            Write-Host "❌ Installation failed: $_"
+            exit 1
+          }
+
+          Write-Host "🔄 Updating PATH environment..."
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+          
+          Write-Host "🔍 Verifying installation..."
+          try {
+            $version = gcloud version
+            Write-Host "✅ gcloud installed successfully:"
+            Write-Host $version
+          } catch {
+            Write-Host "❌ gcloud verification failed: $_"
+            exit 1
+          }
+      
+      - name: Authenticate to Google Cloud
+        shell: powershell
+        run: |
+          Write-Host "🔐 Starting Google Cloud authentication..."
+          try {
+            $credentials = '${{ secrets.GCP_SA_KEY }}'
+            $credentialsPath = "$env:TEMP\gcp-credentials.json"
+            Set-Content -Path $credentialsPath -Value $credentials
+            Write-Host "✅ Credentials file created"
+            
+            Write-Host "🔑 Activating service account..."
+            gcloud auth activate-service-account --key-file=$credentialsPath
+            Write-Host "✅ Service account activated"
+            
+            Write-Host "⚙️ Configuring project..."
+            gcloud config set project to-do-462615
+            Write-Host "✅ Project configured"
+          } catch {
+            Write-Host "❌ Authentication failed: $_"
+            exit 1
+          }
+      
       - name: Get GKE credentials
         uses: 'google-github-actions/get-gke-credentials@v1'
         with:
@@ -25,24 +83,54 @@ jobs:
       - name: Deploy to GKE
         shell: pwsh
         run: |
-          # Install kubectl if not present
+          Write-Host "🔧 Checking kubectl installation..."
           if (!(Get-Command kubectl -ErrorAction SilentlyContinue)) {
-            $KubectlVersion = "v1.27.3"
-            Invoke-WebRequest -Uri "https://dl.k8s.io/release/$KubectlVersion/bin/windows/amd64/kubectl.exe" -OutFile "C:\Windows\System32\kubectl.exe"
+            Write-Host "📥 Installing kubectl..."
+            try {
+              $KubectlVersion = "v1.27.3"
+              Invoke-WebRequest -Uri "https://dl.k8s.io/release/$KubectlVersion/bin/windows/amd64/kubectl.exe" -OutFile "C:\Windows\System32\kubectl.exe"
+              Write-Host "✅ kubectl installed successfully"
+            } catch {
+              Write-Host "❌ kubectl installation failed: $_"
+              exit 1
+            }
+          } else {
+            Write-Host "✅ kubectl already installed"
           }
           
-          kubectl apply -f kubernetes/backend-configmap.yaml
-          kubectl apply -f kubernetes/backend-deployment.yaml
-          kubectl apply -f kubernetes/backend-service.yaml
+          Write-Host "🚀 Deploying configurations..."
+          try {
+            Write-Host "Applying configmap..."
+            kubectl apply -f kubernetes/backend-configmap.yaml
+            Write-Host "✅ Configmap applied"
+            
+            Write-Host "Applying deployment..."
+            kubectl apply -f kubernetes/backend-deployment.yaml
+            Write-Host "✅ Deployment applied"
+            
+            Write-Host "Applying service..."
+            kubectl apply -f kubernetes/backend-service.yaml
+            Write-Host "✅ Service applied"
+          } catch {
+            Write-Host "❌ Deployment failed: $_"
+            exit 1
+          }
       
       - name: Verify deployment
         shell: pwsh
         run: |
-          echo "Waiting for deployment to be available..."
-          kubectl wait --for=condition=available deployment/todo-backend --timeout=60s
-          
-          echo "Checking pod status..."
-          kubectl get pods -l app=todo-backend
-          
-          echo "Checking service status..."
-          kubectl get svc todo-backend
+          Write-Host "⏳ Waiting for deployment to be available..."
+          try {
+            kubectl wait --for=condition=available deployment/todo-backend --timeout=60s
+            Write-Host "✅ Deployment is available"
+            
+            Write-Host "📊 Checking pod status..."
+            kubectl get pods -l app=todo-backend
+            
+            Write-Host "🔍 Checking service status..."
+            kubectl get svc todo-backend
+            Write-Host "✅ Verification complete"
+          } catch {
+            Write-Host "❌ Verification failed: $_"
+            exit 1
+          }
