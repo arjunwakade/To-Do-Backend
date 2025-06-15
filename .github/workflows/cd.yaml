@@ -15,15 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Authenticate to Google Cloud
-        shell: powershell
-        run: |
-          $credentials = '${{ secrets.GCP_SA_KEY }}'
-          $credentialsPath = "$env:TEMP\gcp-credentials.json"
-          Set-Content -Path $credentialsPath -Value $credentials
-          gcloud auth activate-service-account --key-file=$credentialsPath
-          gcloud config set project to-do-462615
-      
       - name: Get GKE credentials
         uses: 'google-github-actions/get-gke-credentials@v1'
         with:
