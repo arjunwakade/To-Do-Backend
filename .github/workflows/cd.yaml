@@ -15,31 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Install PowerShell Core and Cloud SDK
-        shell: powershell
-        run: |
-          # Install PowerShell Core if not present
-          if (-not (Get-Command -Name pwsh -ErrorAction SilentlyContinue)) {
-            Write-Host "Installing PowerShell Core..."
-            $url = "https://github.com/PowerShell/PowerShell/releases/download/v7.3.6/PowerShell-7.3.6-win-x64.msi"
-            $outFile = "$env:TEMP\PowerShell-7.3.6-win-x64.msi"
-            Invoke-WebRequest -Uri $url -OutFile $outFile
-            Start-Process -FilePath msiexec.exe -Args "/i $outFile /quiet /norestart" -Wait
-          }
-          
-          # Install Cloud SDK if not present
-          if (-not (Get-Command -Name gcloud -ErrorAction SilentlyContinue)) {
-            Write-Host "Installing Google Cloud SDK..."
-            $url = "https://dl.google.com/dl/cloudsdk/channels/rapid/GoogleCloudSDKInstaller.exe"
-            $outFile = "$env:TEMP\GoogleCloudSDKInstaller.exe"
-            Invoke-WebRequest -Uri $url -OutFile $outFile
-            Start-Process -FilePath $outFile -Args "/S /allusers /noreporting" -Wait
-            $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-          }
-          
-          # Install GKE auth plugin
-          gcloud components install gke-gcloud-auth-plugin -q
-      
       - name: Authenticate to Google Cloud
         shell: powershell
         run: |
