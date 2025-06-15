@@ -9,7 +9,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest]
+    runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     
     steps:
@@ -32,56 +32,30 @@ jobs:
           project_id: to-do-462615
       
       - name: Deploy to GKE
-        shell: pwsh
+        shell: bash  # Changed from pwsh to bash
         run: |
-          Write-Host "Checking kubectl installation..."
-          if (!(Get-Command kubectl -ErrorAction SilentlyContinue)) {
-            Write-Host "Installing kubectl..."
-            try {
-              $KubectlVersion = "v1.27.3"
-              Invoke-WebRequest -Uri "https://dl.k8s.io/release/$KubectlVersion/bin/windows/amd64/kubectl.exe" -OutFile "C:\Windows\System32\kubectl.exe"
-              Write-Host "[SUCCESS] kubectl installed successfully"
-            } catch {
-              Write-Host "[FAIL] kubectl installation failed: $_"
-              exit 1
-            }
-          } else {
-            Write-Host "[SUCCESS] kubectl already installed"
-          }
-          
-          Write-Host "Deploying configurations..."
-          try {
-            Write-Host "Applying configmap..."
-            kubectl apply -f kubernetes/backend-configmap.yaml
-            Write-Host "[SUCCESS] Configmap applied"
+          echo "Deploying configurations..."
+          kubectl apply -f kubernetes/backend-configmap.yaml
+          echo "[SUCCESS] Configmap applied"
             
-            Write-Host "Applying deployment..."
-            kubectl apply -f kubernetes/backend-deployment.yaml
-            Write-Host "[SUCCESS] Deployment applied"
+          echo "Applying deployment..."
+          kubectl apply -f kubernetes/backend-deployment.yaml
+          echo "[SUCCESS] Deployment applied"
             
-            Write-Host "Applying service..."
-            kubectl apply -f kubernetes/backend-service.yaml
-            Write-Host "[SUCCESS] Service applied"
-          } catch {
-            Write-Host "[FAIL] Deployment failed: $_"
-            exit 1
-          }
-      
+          echo "Applying service..."
+          kubectl apply -f kubernetes/backend-service.yaml
+          echo "[SUCCESS] Service applied"
+
       - name: Verify deployment
-        shell: pwsh
+        shell: bash  # Changed from pwsh to bash
         run: |
-          Write-Host "Waiting for deployment to be available..."
-          try {
-            kubectl wait --for=condition=available deployment/todo-backend --timeout=60s
-            Write-Host "[SUCCESS] Deployment is available"
+          echo "Waiting for deployment to be available..."
+          kubectl wait --for=condition=available deployment/todo-backend --timeout=60s
+          echo "[SUCCESS] Deployment is available"
             
-            Write-Host "Checking pod status..."
-            kubectl get pods -l app=todo-backend
+          echo "Checking pod status..."
+          kubectl get pods -l app=todo-backend
             
-            Write-Host "Checking service status..."
-            kubectl get svc todo-backend
-            Write-Host "[SUCCESS] Verification complete"
-          } catch {
-            Write-Host "[FAIL] Verification failed: $_"
-            exit 1
-          }
+          echo "Checking service status..."
+          kubectl get svc todo-backend
+          echo "[SUCCESS] Verification complete"
