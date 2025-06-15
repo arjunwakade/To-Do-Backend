@@ -9,110 +9,21 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest]
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     
     steps:
       - uses: actions/checkout@v3
       
-      - name: Install Google Cloud SDK
-        shell: powershell
-        run: |
-          # Check if gcloud is already installed
-          $gcloudPath = "D:\apps\Google Cloud CLI\google-cloud-sdk\bin\gcloud.cmd"
-          if (Test-Path $gcloudPath) {
-            Write-Host "[INFO] Google Cloud SDK is already installed"
-            $env:Path = "D:\apps\Google Cloud CLI\google-cloud-sdk\bin;" + $env:Path
-            Write-Host "[SUCCESS] Added gcloud to PATH"
-            exit 0
-          }
-          
-          # If not installed, proceed with installation
-          Write-Host "[INFO] Google Cloud SDK not found. Installing..."
-          
-          # Set security protocol to TLS 1.2
-          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-          
-          Write-Host "[INFO] Creating installation directory..."
-          $installDir = "C:\gcloud-sdk"
-          New-Item -ItemType Directory -Force -Path $installDir | Out-Null
-          
-          Write-Host "[INFO] Downloading Google Cloud SDK installer..."
-          try {
-            # Use System.Net.WebClient instead of Invoke-WebRequest
-            $webClient = New-Object System.Net.WebClient
-            $installerUrl = "https://dl.google.com/dl/cloudsdk/channels/rapid/GoogleCloudSDKInstaller.exe"
-            $installerPath = Join-Path $installDir "GoogleCloudSDKInstaller.exe"
-            $webClient.DownloadFile($installerUrl, $installerPath)
-            Write-Host "[SUCCESS] Download completed successfully"
-          } catch {
-            Write-Host "[ERROR] Failed to download SDK: $_"
-            exit 1
-          }
-
-          Write-Host "[INFO] Installing Google Cloud SDK..."
-          try {
-            # Create and run a scheduled task to bypass antivirus
-            $action = New-ScheduledTaskAction -Execute $installerPath -Argument "/S /allusers /noreporting"
-            $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date)
-            $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
-            Register-ScheduledTask -TaskName "InstallGCloudSDK" -Action $action -Trigger $trigger -Principal $principal -Force
-            Start-ScheduledTask -TaskName "InstallGCloudSDK"
-            
-            # Wait for installation to complete
-            Start-Sleep -Seconds 30
-            Unregister-ScheduledTask -TaskName "InstallGCloudSDK" -Confirm:$false
-            Write-Host "[SUCCESS] Installation completed"
-          } catch {
-            Write-Host "[ERROR] Installation failed: $_"
-            exit 1
-          }
-
-          Write-Host "[INFO] Updating PATH environment..."
-          $gcloudPath = "${env:ProgramFiles(x86)}\Google\Cloud SDK\google-cloud-sdk\bin"
-          $env:Path = "$gcloudPath;" + $env:Path
-          
-          Write-Host "[INFO] Verifying installation..."
-          try {
-            # Force PowerShell to refresh its PATH
-            $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
-            
-            # Try to find gcloud directly
-            $gcloudExe = Join-Path $gcloudPath "gcloud.cmd"
-            if (Test-Path $gcloudExe) {
-              Write-Host "[INFO] Testing gcloud installation..."
-              Start-Process -FilePath $gcloudExe -ArgumentList "version" -Wait -NoNewWindow
-              Write-Host "[SUCCESS] gcloud installed successfully"
-            } else {
-              throw "gcloud.cmd not found at expected location"
-            }
-          } catch {
-            Write-Host "[ERROR] gcloud verification failed: $_"
-            exit 1
-          }
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
       
-      - name: Authenticate to Google Cloud
-        shell: powershell
-        run: |
-          Write-Host "Starting Google Cloud authentication..."
-          try {
-            $credentials = '${{ secrets.GCP_SA_KEY }}'
-            $credentialsPath = "$env:TEMP\gcp-credentials.json"
-            Set-Content -Path $credentialsPath -Value $credentials
-            Write-Host "[SUCCESS] Credentials file created"
-            
-            Write-Host "Activating service account..."
-            gcloud auth activate-service-account --key-file=$credentialsPath
-            Write-Host "[SUCCESS] Service account activated"
-            
-            Write-Host "Configuring project..."
-            gcloud config set project to-do-462615
-            Write-Host "[SUCCESS] Project configured"
-          } catch {
-            Write-Host "[FAIL] Authentication failed: $_"
-            exit 1
-          }
-      
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
+        
       - name: Get GKE credentials
         uses: 'google-github-actions/get-gke-credentials@v1'
         with:
