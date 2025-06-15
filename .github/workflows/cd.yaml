@@ -18,36 +18,36 @@ jobs:
       - name: Install Google Cloud SDK
         shell: powershell
         run: |
-          Write-Host "📥 Downloading Google Cloud SDK installer..."
+          Write-Host "[INFO] Downloading Google Cloud SDK installer..."
           $installerUrl = "https://dl.google.com/dl/cloudsdk/channels/rapid/GoogleCloudSDKInstaller.exe"
           $installerPath = "$env:TEMP\GoogleCloudSDKInstaller.exe"
           try {
             Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath
-            Write-Host "✅ Download completed successfully"
+            Write-Host "[SUCCESS] Download completed successfully"
           } catch {
-            Write-Host "❌ Failed to download SDK: $_"
+            Write-Host "[ERROR] Failed to download SDK: $_"
             exit 1
           }
 
-          Write-Host "🔧 Installing Google Cloud SDK..."
+          Write-Host "[INFO] Installing Google Cloud SDK..."
           try {
             Start-Process -FilePath $installerPath -Args "/S /allusers /noreporting" -Wait
-            Write-Host "✅ Installation completed"
+            Write-Host "[SUCCESS] Installation completed"
           } catch {
-            Write-Host "❌ Installation failed: $_"
+            Write-Host "[ERROR] Installation failed: $_"
             exit 1
           }
 
-          Write-Host "🔄 Updating PATH environment..."
+          Write-Host "[INFO] Updating PATH environment..."
           $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
           
-          Write-Host "🔍 Verifying installation..."
+          Write-Host "[INFO] Verifying installation..."
           try {
             $version = gcloud version
-            Write-Host "✅ gcloud installed successfully:"
+            Write-Host "[SUCCESS] gcloud installed successfully:"
             Write-Host $version
           } catch {
-            Write-Host "❌ gcloud verification failed: $_"
+            Write-Host "[ERROR] gcloud verification failed: $_"
             exit 1
           }
       
